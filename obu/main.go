@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+
+	"github.com/andrei-kozel/toll-calculator/types"
 )
 
 const (
@@ -14,12 +16,6 @@ const (
 )
 
 var sendInterval = time.Second
-
-type OBUData struct {
-	OBUID int     `json:"obu_id"`
-	Lat   float64 `json:"lat`
-	Long  float64 `json:"long:`
-}
 
 func main() {
 	obuIDS := generateOBUIDS(20)
@@ -32,7 +28,7 @@ func main() {
 	for {
 		for i := range obuIDS {
 			lat, long := genLocation()
-			data := OBUData{
+			data := types.OBUData{
 				OBUID: obuIDS[i],
 				Lat:   lat,
 				Long:  long,
