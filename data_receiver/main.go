@@ -32,10 +32,14 @@ func NewDataReceiver() (*DataReceiver, error) {
 		err        error
 		kafkaTopic = "obudata"
 	)
+
 	p, err = NewKafkaProducer(kafkaTopic)
 	if err != nil {
 		return nil, err
 	}
+
+	p = NewLogMiddlware(p)
+
 	return &DataReceiver{
 		msgch: make(chan types.OBUData, 128),
 		prod:  p,
@@ -61,7 +65,6 @@ func (dr *DataReceiver) handleWS(w http.ResponseWriter, r *http.Request) {
 }
 
 func (dr *DataReceiver) wsReceiveLoop() {
-	fmt.Println("New OBU connected client connected !")
 
 	for {
 		var data types.OBUData
@@ -70,7 +73,6 @@ func (dr *DataReceiver) wsReceiveLoop() {
 			continue
 		}
 		data.RequestID = rand.Intn(math.MaxInt)
-		fmt.Println("received message", data)
 		if err := dr.produceData(data); err != nil {
 			fmt.Println("kafka produce error:", err)
 		}
