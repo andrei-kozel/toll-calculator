@@ -1,4 +1,4 @@
-.PHONY: obu receiver calculator 
+.PHONY: obu receiver calculator invoicer
 
 obu:
 	@go build -o bin/obu obu/main.go
@@ -11,3 +11,7 @@ receiver:
 calculator:
 	@go build -o bin/distance_calculator ./distance_calculator/
 	@./bin/distance_calculator 
+
+invoicer:
+	@go build -o bin/invoicer ./invoicer/
+	@./bin/invoicer 

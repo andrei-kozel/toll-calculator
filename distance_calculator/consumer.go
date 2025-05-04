@@ -2,8 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"os"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/sirupsen/logrus"
@@ -57,12 +55,10 @@ func (c *KafkaConsumer) readMessageLoop() {
 			continue
 		}
 
-		distance, err := c.calcService.CalculateDistance(data)
+		_, err = c.calcService.CalculateDistance(data)
 		if err != nil {
 			logrus.Errorf("cacl error: %s", err)
 			continue
 		}
-
-		fmt.Fprintf(os.Stdout, "distance %.2f\n", distance)
 	}
 }

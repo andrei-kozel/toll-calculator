@@ -15,10 +15,10 @@ const (
 	wsEndpoint = "ws://127.0.0.1:30000/ws"
 )
 
-var sendInterval = time.Second
+var sendInterval = 3 * time.Second
 
 func main() {
-	obuIDS := generateOBUIDS(20)
+	obuIDS := generateOBUIDS(1)
 
 	conn, _, err := websocket.DefaultDialer.Dial(wsEndpoint, nil)
 	if err != nil {
