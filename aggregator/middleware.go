@@ -9,24 +9,24 @@ import (
 )
 
 type LogMiddleware struct {
-	next DataProducer
+	next Aggregator
 }
 
-func NewLogMiddlware(next DataProducer) *LogMiddleware {
+func NewLogMiddleware(next Aggregator) Aggregator {
 	return &LogMiddleware{
 		next: next,
 	}
 }
 
-func (l *LogMiddleware) ProduceData(data types.OBUData) error {
+func (m *LogMiddleware) AggregateDistance(distance types.Distance) error {
 	defer func(start time.Time) {
 		logrus.WithFields(logrus.Fields{
-			"OBUID": data.OBUID,
-			"lat":   data.Lat,
-			"long":  data.Long,
+			"OBUID": distance.OBUID,
+			"value": distance.Value,
+			"unix":  distance.Unix,
 			"took":  time.Since(start),
-		}).Info("producing to kafka")
+		}).Info("aggregate distance")
 	}(time.Now())
 
-	return l.next.ProduceData(data)
+	return m.next.AggregateDistance(distance)
 }
