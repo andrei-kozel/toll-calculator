@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/sirupsen/logrus"
 
+	"github.com/andrei-kozel/toll-calculator/aggregator/client"
 	"github.com/andrei-kozel/toll-calculator/types"
 )
 
@@ -13,9 +15,10 @@ type KafkaConsumer struct {
 	consumer    *kafka.Consumer
 	isRunning   bool
 	calcService CalculatorService
+	aggClient   *client.Client
 }
 
-func NewKafkaConsumer(topic string, svc CalculatorService) (*KafkaConsumer, error) {
+func NewKafkaConsumer(topic string, svc CalculatorService, aggClient *client.Client) (*KafkaConsumer, error) {
 	c, err := kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers": "localhost",
 		"group.id":          "myGroup",
@@ -33,6 +36,7 @@ func NewKafkaConsumer(topic string, svc CalculatorService) (*KafkaConsumer, erro
 	return &KafkaConsumer{
 		consumer:    c,
 		calcService: svc,
+		aggClient:   aggClient,
 	}, nil
 }
 
@@ -55,9 +59,18 @@ func (c *KafkaConsumer) readMessageLoop() {
 			continue
 		}
 
-		_, err = c.calcService.CalculateDistance(data)
+		distance, err := c.calcService.CalculateDistance(data)
 		if err != nil {
 			logrus.Errorf("cacl error: %s", err)
+			continue
+		}
+		req := types.Distance{
+			Value: distance,
+			Unix:  time.Now().UnixNano(),
+			OBUID: data.OBUID,
+		}
+		if err := c.aggClient.AggregateInvoice(req); err != nil {
+			logrus.Errorf("agregate error: %v", err)
 			continue
 		}
 	}
